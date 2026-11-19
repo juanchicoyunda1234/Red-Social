@@ -1,13 +1,12 @@
 package negocio;
 
-import modelo.Usuario;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import modelo.Usuario;
 
 public class RedSocial {
     private final Map<String, Usuario> usuarios = new LinkedHashMap<>();
@@ -70,12 +69,47 @@ public class RedSocial {
         return "Seguimiento eliminado: " + a + " -> " + b;
     }
 
+    public List<String> eliminarUsuario(String nombre) {
+        List<String> eliminadas = new ArrayList<>();
+        if (!existeUsuario(nombre)) {
+            eliminadas.add("Rechazado: el usuario " + nombre + " no existe");
+            return eliminadas;
+        }
+        for (String amigo : amistades.get(nombre)) {
+            amistades.get(amigo).remove(nombre);
+            eliminadas.add("Amistad " + amigo + " <-> " + nombre + " (eliminada)");
+        }
+        for (String seguido : seguimientos.get(nombre)) {
+            eliminadas.add("Seguimiento " + nombre + " -> " + seguido + " (eliminado)");
+        }
+        for (Map.Entry<String, Set<String>> entrada : seguimientos.entrySet()) {
+            if (!entrada.getKey().equals(nombre) && entrada.getValue().remove(nombre)) {
+                eliminadas.add("Seguimiento " + entrada.getKey() + " -> " + nombre + " (eliminado)");
+            }
+        }
+        amistades.remove(nombre);
+        seguimientos.remove(nombre);
+        usuarios.remove(nombre);
+        eliminadas.add("Usuario " + nombre + " eliminado");
+        return eliminadas;
+    }
+
     public boolean sonAmigos(String a, String b) {
         return amistades.containsKey(a) && amistades.get(a).contains(b);
     }
 
     public boolean sigue(String a, String b) {
         return seguimientos.containsKey(a) && seguimientos.get(a).contains(b);
+    }
+
+    public boolean apareceEnAlgunaConexion(String nombre) {
+        for (Set<String> amigos : amistades.values()) {
+            if (amigos.contains(nombre)) return true;
+        }
+        for (Set<String> seguidos : seguimientos.values()) {
+            if (seguidos.contains(nombre)) return true;
+        }
+        return amistades.containsKey(nombre) || seguimientos.containsKey(nombre);
     }
 
     public List<String> seguidoresDe(String nombre) {
@@ -86,6 +120,29 @@ public class RedSocial {
             }
         }
         return seguidores;
+    }
+
+    public String mostrarRed() {
+        if (usuarios.isEmpty()) {
+            return "La red social esta vacia";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String nombre : usuarios.keySet()) {
+            sb.append(String.format("%-7s| amigos: %-16s| sigue a: %-10s| seguidores: %s%n",
+                    nombre,
+                    formatear(amistades.get(nombre)),
+                    formatear(seguimientos.get(nombre)),
+                    formatear(seguidoresDe(nombre))));
+        }
+        return sb.toString();
+    }
+
+    public String listarUsuarios() {
+        return String.join(", ", usuarios.keySet());
+    }
+
+    public int cantidadUsuarios() {
+        return usuarios.size();
     }
 
     private String validarRelacion(String a, String b, String tipo) {
@@ -99,5 +156,13 @@ public class RedSocial {
             return "Rechazado: " + a + " no puede ser " + tipo + " de si mismo";
         }
         return null;
+    }
+
+    private String formatear(Iterable<String> nombres) {
+        List<String> lista = new ArrayList<>();
+        for (String n : nombres) {
+            lista.add(n);
+        }
+        return lista.isEmpty() ? "-" : String.join(", ", lista);
     }
 }
