@@ -2,8 +2,10 @@ package negocio;
 
 import modelo.Usuario;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,8 +50,42 @@ public class RedSocial {
         return "Amistad eliminada: " + a + " <-> " + b;
     }
 
+    public String seguir(String a, String b) {
+        String error = validarRelacion(a, b, "seguidor");
+        if (error != null) {
+            return error;
+        }
+        if (sigue(a, b)) {
+            return "Rechazado: " + a + " ya sigue a " + b;
+        }
+        seguimientos.get(a).add(b);
+        return "Seguimiento agregado: " + a + " -> " + b;
+    }
+
+    public String dejarDeSeguir(String a, String b) {
+        if (!existeUsuario(a) || !existeUsuario(b) || !sigue(a, b)) {
+            return "Rechazado: no existe el seguimiento " + a + " -> " + b;
+        }
+        seguimientos.get(a).remove(b);
+        return "Seguimiento eliminado: " + a + " -> " + b;
+    }
+
     public boolean sonAmigos(String a, String b) {
         return amistades.containsKey(a) && amistades.get(a).contains(b);
+    }
+
+    public boolean sigue(String a, String b) {
+        return seguimientos.containsKey(a) && seguimientos.get(a).contains(b);
+    }
+
+    public List<String> seguidoresDe(String nombre) {
+        List<String> seguidores = new ArrayList<>();
+        for (Map.Entry<String, Set<String>> entrada : seguimientos.entrySet()) {
+            if (entrada.getValue().contains(nombre)) {
+                seguidores.add(entrada.getKey());
+            }
+        }
+        return seguidores;
     }
 
     private String validarRelacion(String a, String b, String tipo) {
