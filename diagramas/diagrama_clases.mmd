@@ -1,0 +1,50 @@
+classDiagram
+    direction LR
+    namespace app {
+        class Main {
+            -RedSocial red$
+            -Scanner sc$
+            +main(String[] args)$ void
+            -mostrarMenu()$ void
+            -agregarUsuario()$ void
+            -datosPrueba()$ void
+            -titulo(String texto)$ void
+            -leer(String mensaje)$ String
+            -leerEntero()$ int
+        }
+    }
+    namespace negocio {
+        class RedSocial {
+            -Map~String, Usuario~ usuarios
+            -Map#lt;String, Set#lt;String#gt;#gt; amistades
+            -Map#lt;String, Set#lt;String#gt;#gt; seguimientos
+            +agregarUsuario(String nombre) boolean
+            +existeUsuario(String nombre) boolean
+            +agregarAmistad(String a, String b) String
+            +eliminarAmistad(String a, String b) String
+            +seguir(String a, String b) String
+            +dejarDeSeguir(String a, String b) String
+            +eliminarUsuario(String nombre) List~String~
+            +sonAmigos(String a, String b) boolean
+            +sigue(String a, String b) boolean
+            +apareceEnAlgunaConexion(String nombre) boolean
+            +seguidoresDe(String nombre) List~String~
+            +mostrarRed() String
+            +listarUsuarios() String
+            +cantidadUsuarios() int
+            -validarRelacion(String a, String b, String tipo) String
+            -formatear(Iterable~String~ nombres) String
+        }
+    }
+    namespace modelo {
+        class Usuario {
+            -String nombre
+            +Usuario(String nombre)
+            +getNombre() String
+            +equals(Object o) boolean
+            +hashCode() int
+            +toString() String
+        }
+    }
+    Main --> "1" RedSocial : usa
+    RedSocial "1" *-- "0..*" Usuario : vertices
